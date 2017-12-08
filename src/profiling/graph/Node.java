@@ -1,22 +1,25 @@
 package profiling.graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Node<T>
 {
+	public final long id;
 	public final T data;
-	public final List<Node<T>> adjacents = new ArrayList<>();
+	public final List<Node<T>> adjacents;
 	
-
-	public
-	Node(T data)
+	
+	Node(int id, T data)
 	{
+		this.id = id;
 		this.data = data;
+		this.adjacents = new ArrayList<>();
 	}
 	
 	
-	public
 	boolean
 	add_edge(Node<T> target)
 	{

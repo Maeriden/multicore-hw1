@@ -4,16 +4,28 @@ import java.util.*;
 
 public class Graph<T>
 {
-	private final Map<T, Node<T>> nodes = new HashMap<>();
+	private final Map<T, Node<T>> nodes;
+	private int next_id;
+	
+	
+	
+	public
+	Graph()
+	{
+		this.nodes = new HashMap<>();
+		this.next_id = 1;
+	}
 	
 	
 	public
 	boolean
 	add_node(T data)
 	{
+		if(data == null)
+			return false;
 		if(this.nodes.containsKey(data))
 			return false;
-		Node<T> node = new Node<>(data);
+		Node<T> node = new Node<>(this.next_id++, data);
 		this.nodes.put(data, node);
 		return true;
 	}
@@ -23,6 +35,42 @@ public class Graph<T>
 	boolean
 	add_edge(T tail, T head)
 	{
+		if(tail == null || head == null)
+			return false;
+		boolean added = false;
+		Node<T> tail_node = this.nodes.get(tail);
+		if(tail_node != null)
+		{
+			Node<T> head_node = this.nodes.get(head);
+			if(head_node != null)
+			{
+				added = tail_node.add_edge(head_node);
+			}
+		}
+		return added;
+	}
+	
+	
+	public synchronized
+	boolean
+	add_node_async(T data)
+	{
+		if(data == null)
+			return false;
+		if(this.nodes.containsKey(data))
+			return false;
+		Node<T> node = new Node<>(this.next_id++, data);
+		this.nodes.put(data, node);
+		return true;
+	}
+	
+	
+	public synchronized
+	boolean
+	add_edge_async(T tail, T head)
+	{
+		if(tail == null || head == null)
+			return false;
 		boolean added = false;
 		Node<T> tail_node = this.nodes.get(tail);
 		if(tail_node != null)
