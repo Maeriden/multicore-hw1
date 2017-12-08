@@ -61,17 +61,26 @@ public class Main
 		
 		if(opts.ss)
 		{
-			sequential_sequential(unsorted, split_cutoff);
+			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
+			sequential_sequential(unsorted, split_cutoff, exec_dag);
+			if(gexf != null)
+				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ss.gexf"));
 		}
 		
 		if(opts.ps)
 		{
+			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_sequential(unsorted, split_cutoff);
+			if(gexf != null)
+				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ps.gexf"));
 		}
 		
 		if(opts.pp)
 		{
+			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_parallel(unsorted, split_cutoff, merge_cutoff);
+			if(gexf != null)
+				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".pp.gexf"));
 		}
 	}
 	
@@ -117,13 +126,17 @@ public class Main
 	
 	static private
 	void
-	sequential_sequential(int[] unsorted, int cutoff)
+	sequential_sequential(int[] unsorted, int cutoff, Graph<NodeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
-		seqseq.MergeSort merge_sort = new seqseq.MergeSort(array, 0, array.length, cutoff);
+		seqseq.MergeSort merge_sort;
+		if(exec_dag == null)
+			merge_sort = new seqseq.MergeSort(array, 0, array.length, cutoff);
+		else
+			merge_sort = new seqseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
 		merge_sort.execute();
@@ -271,7 +284,7 @@ public class Main
 	argp_get_command_line_options(String[] args)
 	{
 		ArgumentParser argp = ArgumentParsers.newFor("mergesort").build()
-			.defaultHelp(true);
+											 .defaultHelp(true);
 		
 		ArgumentGroup group_algorithm = argp.addArgumentGroup("Algorithms");
 		group_algorithm.addArgument("--ss")
