@@ -1,3 +1,17 @@
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+import joptsimple.OptionSpec;
+import net.sourceforge.argparse4j.ArgumentParsers;
+import net.sourceforge.argparse4j.annotation.Arg;
+import net.sourceforge.argparse4j.helper.HelpScreenException;
+import net.sourceforge.argparse4j.impl.Arguments;
+import net.sourceforge.argparse4j.inf.*;
+import profiling.GraphExporter;
+import profiling.NodeData;
+import profiling.graph.Graph;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.ForkJoinPool;
@@ -12,119 +26,106 @@ public class Main
 	void
 	main(String[] args)
 	{
-		boolean do_seq_seq = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("-ss"));
-		boolean do_par_seq = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("-ps"));
-		boolean do_par_par = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("-pp"));
-		boolean do_desc = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("-desc"));
-		boolean do_rand = Arrays.stream(args).anyMatch(arg -> arg.equalsIgnoreCase("-rand"));
-		int cutoff = Integer.parseInt(Arrays.stream(args).filter(arg -> arg.matches("-c\\d+")).findFirst().orElse("-c0").substring(2));
-		int array_len = Integer.parseInt(Arrays.stream(args).filter(arg -> arg.matches("-s\\d+")).findFirst().orElse("-s0").substring(2));
-		int merge_cutoff = 1;
+		CommandLineOptions opts = argp_get_command_line_options(args);
+		if(opts == null)
+			return;
+		if(!opts.ss && !opts.ps && !opts.pp)
+			return;
+		if(opts.split_cutoff < 1)
+			return;
+		if(opts.merge_cutoff < 1)
+			return;
+		if(opts.array_length < 1)
+			return;
 		
-		if(!do_seq_seq && !do_par_seq && !do_par_par)
-		{
-			// Default to sequential test
-			do_seq_seq = true;
-		}
-		if(!do_desc && !do_rand)
-		{
-			// Default to worst-case array
-			do_desc = true;
-		}
-		if(cutoff < 1)
-		{
-			// Default to no cutoff
-			cutoff = 1;
-		}
-		if(array_len < 1)
-		{
-			// Default to big array
-			array_len = 100_000_000;
-		}
 		
-		int[] unsorted = new int[array_len];
-		if(do_desc)
+		int split_cutoff = opts.split_cutoff;
+		int merge_cutoff = opts.merge_cutoff;
+		int array_length = opts.array_length;
+		String gexf = opts.gexf;
+		
+		
+		String generation_type;
+		int[] unsorted = new int[array_length];
+		if(opts.desc)
 		{
-			System.out.print(String.format("Creating array of %,d descending integers... ", unsorted.length));
-			
-			long elapsed_time = generate_descending_array(unsorted);
-			
-			System.out.println(String.format("done in %dms", elapsed_time));
-			if(unsorted.length <= ARRAY_MAX_PRINT_SIZE)
-				System.out.println(Arrays.toString(unsorted));
-			System.out.println();
-			
-			if(do_seq_seq)
-				sequential_sequential(unsorted, cutoff);
-			if(do_par_seq)
-				parallel_sequential(unsorted, cutoff);
-			if(do_par_par)
-				parallel_parallel(unsorted, cutoff, merge_cutoff);
-			
-			System.gc();
+			generation_type = "desc";
+			generate_descending_array(unsorted);
+		}
+		else
+		{
+			generation_type = "rand";
+			generate_random_array(unsorted);
 		}
 		
-		if(do_desc && do_rand)
-			System.out.println();
 		
-		if(do_rand)
+		if(opts.ss)
 		{
-			System.out.print(String.format("Creating array of %,d random integers... ", unsorted.length));
-			
-			long elapsed_time = generate_random_array(unsorted);
-			
-			System.out.println(String.format("done in %dms", elapsed_time));
-			if(unsorted.length <= ARRAY_MAX_PRINT_SIZE)
-				System.out.println(Arrays.toString(unsorted));
-			System.out.println();
-			
-			if(do_seq_seq)
-				sequential_sequential(unsorted, cutoff);
-			if(do_par_seq)
-				parallel_sequential(unsorted, cutoff);
-			if(do_par_par)
-				parallel_parallel(unsorted, cutoff, merge_cutoff);
-			
-			System.gc();
+			sequential_sequential(unsorted, split_cutoff);
+		}
+		
+		if(opts.ps)
+		{
+			parallel_sequential(unsorted, split_cutoff);
+		}
+		
+		if(opts.pp)
+		{
+			parallel_parallel(unsorted, split_cutoff, merge_cutoff);
 		}
 	}
 	
 	
 	static private
-	long
-	generate_descending_array(int[] array)
+	void
+	generate_descending_array(int[] result)
 	{
+		System.out.print(String.format("Creating array of %,d descending integers... ", result.length));
+		
 		long time_begin = System.currentTimeMillis();
-		for(int i = 0; i < array.length; ++i)
-			array[i] = array.length - i;
+		for(int i = 0; i < result.length; ++i)
+			result[i] = result.length - i;
 		long time_end = System.currentTimeMillis();
-		return time_end - time_begin;
+		
+		long elapsed_time = time_end - time_begin;
+		System.out.println(String.format("done in %dms", elapsed_time));
+		if(result.length <= ARRAY_MAX_PRINT_SIZE)
+			System.out.println(Arrays.toString(result));
+		System.out.println();
 	}
 	
 	
 	static private
-	long
-	generate_random_array(int[] array)
+	void
+	generate_random_array(int[] result)
 	{
+		System.out.print(String.format("Creating array of %,d random integers... ", result.length));
+		
 		Random random = new Random(0);
 		long time_begin = System.currentTimeMillis();
-		for(int i = 0; i < array.length; ++i)
-			array[i] = random.nextInt(array.length);
+		for(int i = 0; i < result.length; ++i)
+			result[i] = random.nextInt(result.length);
 		long time_end = System.currentTimeMillis();
-		return time_end - time_begin;
+		
+		long elapsed_time = time_end - time_begin;
+		System.out.println(String.format("done in %dms", elapsed_time));
+		if(result.length <= ARRAY_MAX_PRINT_SIZE)
+			System.out.println(Arrays.toString(result));
+		System.out.println();
 	}
 	
 	
 	static private
-	long
+	void
 	sequential_sequential(int[] unsorted, int cutoff)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
-		long time_begin = System.currentTimeMillis();
 		seqseq.MergeSort merge_sort = new seqseq.MergeSort(array, 0, array.length, cutoff);
+		
+		long time_begin = System.currentTimeMillis();
 		merge_sort.execute();
 		long time_end = System.currentTimeMillis();
 		assert is_sorted(array);
@@ -134,13 +135,11 @@ public class Main
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
 			System.out.println(Arrays.toString(array));
 		System.out.println();
-		
-		return elapsed_time;
 	}
 	
 	
 	static private
-	long
+	void
 	parallel_sequential(int[] unsorted, int cutoff)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
@@ -158,13 +157,11 @@ public class Main
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
 			System.out.println(Arrays.toString(array));
 		System.out.println();
-		
-		return elapsed_time;
 	}
 	
 	
 	static private
-	long
+	void
 	parallel_parallel(int[] unsorted, int cutoff, int merge_cutoff)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
@@ -182,8 +179,6 @@ public class Main
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
 			System.out.println(Arrays.toString(array));
 		System.out.println();
-		
-		return elapsed_time;
 	}
 	
 	
@@ -198,4 +193,152 @@ public class Main
 		}
 		return true;
 	}
+	
+	
+	static private
+	CommandLineOptions
+	jopt_get_command_line_options(String[] args)
+	{
+		OptionParser jopt = new OptionParser(false);
+		
+		OptionSpec<Void> help = jopt
+			.acceptsAll(Arrays.asList("?", "h", "help"), "Show this help and exit. If present, ignores all other options")
+			.forHelp();
+		
+		OptionSpec<Void> ss = jopt
+			.accepts("ss", "Run sequential-sequential merge sort.");
+		OptionSpec<Void> ps = jopt
+			.accepts("ps", "Run parallel-sequential merge sort.");
+		OptionSpec<Void> pp = jopt
+			.accepts("pp", "Run parallel-parallel merge sort.");
+		OptionSpec<Void> desc = jopt
+			.acceptsAll(Arrays.asList("d", "desc"), "Generate descending numbers (worst-case scenario).");
+		OptionSpec<Integer> split_cutoff = jopt
+			.acceptsAll(Arrays.asList("c", "split-cutoff"), "Cutoff parameter for the divide operation.")
+			.withRequiredArg()
+			.ofType(int.class)
+			.required()
+			.defaultsTo(1);
+		OptionSpec<Integer> merge_cutoff = jopt
+			.acceptsAll(Arrays.asList("m", "merge-cutoff"), "Cutoff parameter for the conquer operation.")
+			.requiredIf(pp)
+			.withRequiredArg()
+			.ofType(int.class)
+			.required()
+			.defaultsTo(1);
+		OptionSpec<Integer> array_length = jopt
+			.acceptsAll(Arrays.asList("n", "numbers"), "Amount of numbers to sort. Will be [n,1] with --desc.")
+			.withRequiredArg()
+			.ofType(int.class)
+			.required()
+			.defaultsTo(100_000);
+		OptionSpec<String> gexf = jopt
+			.acceptsAll(Arrays.asList("g", "gexf"), "File name to write gexf-formatted execution data. Do not include file extension.")
+			.withRequiredArg()
+			.ofType(String.class);
+		
+		OptionSet options = jopt.parse(args);
+		
+		if(options.has(help))
+		{
+			try
+			{
+				jopt.printHelpOn(System.err);
+			}
+			catch(IOException exception)
+			{
+				exception.printStackTrace();
+			}
+			return null;
+		}
+		
+		CommandLineOptions opts = new CommandLineOptions();
+		opts.ss = options.has(ss);
+		opts.ps = options.has(ps);
+		opts.pp = options.has(pp);
+		opts.desc = options.has(desc);
+		opts.split_cutoff = options.valueOf(split_cutoff);
+		opts.merge_cutoff = options.valueOf(merge_cutoff);
+		opts.array_length = options.valueOf(array_length);
+		opts.gexf = options.valueOf(gexf);
+		
+		return opts;
+	}
+	
+	
+	static private
+	CommandLineOptions
+	argp_get_command_line_options(String[] args)
+	{
+		ArgumentParser argp = ArgumentParsers.newFor("mergesort").build()
+			.defaultHelp(true);
+		
+		ArgumentGroup group_algorithm = argp.addArgumentGroup("Algorithms");
+		group_algorithm.addArgument("--ss")
+					   .action(Arguments.storeTrue())
+					   .help("Run sequential-sequential merge sort");
+		group_algorithm.addArgument("--ps")
+					   .action(Arguments.storeTrue())
+					   .help("Run parallel-sequential merge sort");
+		group_algorithm.addArgument("--pp")
+					   .action(Arguments.storeTrue())
+					   .help("Run parallel-parallel merge sort");
+		
+		ArgumentGroup group_generation = argp.addArgumentGroup("Number generation");
+		group_generation.addArgument("--desc")
+						.action(Arguments.storeTrue())
+						.help("Generate descending numbers (worst-case scenario)");
+		
+		ArgumentGroup group_tuning = argp.addArgumentGroup("Tuning");
+		group_tuning.addArgument("--split-cutoff")
+					.type(int.class)
+					.setDefault(1)
+					.metavar("CUTOFF")
+					.help("Cutoff value for the divide operation");
+		group_tuning.addArgument("--merge-cutoff")
+					.type(int.class)
+					.setDefault(1)
+					.metavar("CUTOFF")
+					.help("Cutoff value for the conquer operation");
+		
+		ArgumentGroup group_profiling = argp.addArgumentGroup("Profiling");
+		group_profiling.addArgument("--gexf")
+					   .metavar("STRING")
+					   .help("File name to write gexf-formatted execution data (do not include file extension)");
+		
+		argp.addArgument("array-length")
+			.type(int.class)
+			.required(true)
+			.metavar("N")
+			.help("Amount of numbers to sort (will be [N..1] with --desc)");
+		
+		try
+		{
+			CommandLineOptions opts = new CommandLineOptions();
+			argp.parseArgs(args, opts);
+			return opts;
+		}
+		catch(HelpScreenException ignored)
+		{
+		
+		}
+		catch(ArgumentParserException exception)
+		{
+			exception.printStackTrace();
+		}
+		return null;
+	}
+}
+
+
+class CommandLineOptions
+{
+	@Arg boolean ss;
+	@Arg boolean ps;
+	@Arg boolean pp;
+	@Arg boolean desc;
+	@Arg int split_cutoff;
+	@Arg int merge_cutoff;
+	@Arg int array_length;
+	@Arg String gexf;
 }
