@@ -50,7 +50,7 @@ public class MergeSort extends RecursiveAction
 	void
 	split(int[] array, int[] buffer, int begin, int end, int cutoff, int merge_cutoff)
 	{
-		assert(RecursiveAction.inForkJoinPool());
+		assert RecursiveAction.inForkJoinPool();
 		
 		int slice_length = end - begin;
 		if(slice_length <= cutoff)
