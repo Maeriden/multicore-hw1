@@ -5,31 +5,31 @@ import java.util.concurrent.RecursiveAction;
 
 public class MergeSort extends RecursiveAction
 {
-	private final int[] array;
-	private final int[] buffer;
-	private final int begin;
-	private final int end;
-	private final int cutoff;
+	protected final int[] array;
+	protected final int[] buffer;
+	protected final int begin;
+	protected final int end;
+	protected final int split_cutoff;
 	
 	
 	public
-	MergeSort(int[] array, int begin, int end, int cutoff)
+	MergeSort(int[] array, int begin, int end, int split_cutoff)
 	{
 		this.array = array;
 		this.begin = begin;
 		this.end   = end;
-		this.cutoff = cutoff;
+		this.split_cutoff = split_cutoff;
 		this.buffer = new int[this.array.length];
 	}
 	
 	
 	private
-	MergeSort(int[] array, int[] buffer, int begin, int end, int cutoff)
+	MergeSort(int[] array, int[] buffer, int begin, int end, int split_cutoff)
 	{
 		this.array = array;
 		this.begin = begin;
 		this.end   = end;
-		this.cutoff = cutoff;
+		this.split_cutoff = split_cutoff;
 		this.buffer = buffer;
 	}
 	
@@ -39,13 +39,13 @@ public class MergeSort extends RecursiveAction
 	void
 	compute()
 	{
-		sort(this.array, this.buffer, this.begin, this.end, this.cutoff);
+		split(this.array, this.buffer, this.begin, this.end, this.split_cutoff);
 	}
 	
 	
 	static private
 	void
-	sort(int[] array, int[] buffer, int begin, int end, int cutoff)
+	split(int[] array, int[] buffer, int begin, int end, int cutoff)
 	{
 		assert(RecursiveAction.inForkJoinPool());
 		

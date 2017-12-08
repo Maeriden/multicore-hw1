@@ -4,20 +4,20 @@ import java.util.Arrays;
 
 public class MergeSort
 {
-	private final int[] array;
-	private final int[] buffer;
-	private final int begin;
-	private final int end;
-	private final int cutoff;
+	protected final int[] array;
+	protected final int[] buffer;
+	protected final int begin;
+	protected final int end;
+	protected final int split_cutoff;
 	
 	
 	public
-	MergeSort(int[] array, int begin, int end, int cutoff)
+	MergeSort(int[] array, int begin, int end, int split_cutoff)
 	{
 		this.array = array;
 		this.begin = begin;
 		this.end   = end;
-		this.cutoff = cutoff;
+		this.split_cutoff = split_cutoff;
 		this.buffer = new int[this.array.length];
 	}
 	
@@ -26,13 +26,13 @@ public class MergeSort
 	void
 	execute()
 	{
-		sort(this.array, this.buffer, this.begin, this.end, this.cutoff);
+		split(this.array, this.buffer, this.begin, this.end, this.split_cutoff);
 	}
 	
 	
 	static private
 	void
-	sort(int[] array, int[] buffer, int begin, int end, int cutoff)
+	split(int[] array, int[] buffer, int begin, int end, int cutoff)
 	{
 		int slice_length = end - begin;
 		if(slice_length <= cutoff)
@@ -42,8 +42,8 @@ public class MergeSort
 		}
 		
 		int mid = begin + (slice_length / 2);
-		sort(array, buffer, begin, mid, cutoff);
-		sort(array, buffer, mid, end, cutoff);
+		split(array, buffer, begin, mid, cutoff);
+		split(array, buffer, mid, end, cutoff);
 		
 		merge(array, buffer, begin, mid, end);
 		System.arraycopy(buffer, begin,

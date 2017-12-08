@@ -5,33 +5,33 @@ import java.util.concurrent.RecursiveAction;
 
 public class MergeSort extends RecursiveAction
 {
-	private final int[] array;
-	private final int[] buffer;
-	private final int begin;
-	private final int end;
-	private final int cutoff;
-	private final int merge_cutoff;
+	protected final int[] array;
+	protected final int[] buffer;
+	protected final int begin;
+	protected final int end;
+	protected final int split_cutoff;
+	protected final int merge_cutoff;
 	
 	
 	public
-	MergeSort(int[] array, int begin, int end, int cutoff, int merge_cutoff)
+	MergeSort(int[] array, int begin, int end, int split_cutoff, int merge_cutoff)
 	{
 		this.array = array;
 		this.begin = begin;
 		this.end   = end;
-		this.cutoff = cutoff;
+		this.split_cutoff = split_cutoff;
 		this.merge_cutoff = merge_cutoff;
 		this.buffer = new int[this.array.length];
 	}
 	
 	
 	private
-	MergeSort(int[] array, int[] buffer, int begin, int end, int cutoff, int merge_cutoff)
+	MergeSort(int[] array, int[] buffer, int begin, int end, int split_cutoff, int merge_cutoff)
 	{
 		this.array = array;
 		this.begin = begin;
 		this.end   = end;
-		this.cutoff = cutoff;
+		this.split_cutoff = split_cutoff;
 		this.merge_cutoff = merge_cutoff;
 		this.buffer = buffer;
 	}
@@ -42,13 +42,13 @@ public class MergeSort extends RecursiveAction
 	void
 	compute()
 	{
-		sort(this.array, this.buffer, this.begin, this.end, this.cutoff, this.merge_cutoff);
+		split(this.array, this.buffer, this.begin, this.end, this.split_cutoff, this.merge_cutoff);
 	}
 	
 	
 	static private
 	void
-	sort(int[] array, int[] buffer, int begin, int end, int cutoff, int merge_cutoff)
+	split(int[] array, int[] buffer, int begin, int end, int cutoff, int merge_cutoff)
 	{
 		assert(RecursiveAction.inForkJoinPool());
 		
