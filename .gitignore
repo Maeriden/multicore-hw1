@@ -1,6 +1,7 @@
 .idea/
+bin/
 lib/
 out/
-run/
 
 *.iml
+*.gexf
