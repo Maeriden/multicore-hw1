@@ -1,9 +1,9 @@
-package profiling;
+package mchw1.profiling;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import profiling.graph.Graph;
-import profiling.graph.Node;
+import mchw1.profiling.graph.Graph;
+import mchw1.profiling.graph.Node;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;

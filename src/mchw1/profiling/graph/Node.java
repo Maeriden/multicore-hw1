@@ -1,9 +1,7 @@
-package profiling.graph;
+package mchw1.profiling.graph;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class Node<T>
 {

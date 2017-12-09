@@ -1,4 +1,4 @@
-package parseq;
+package mchw1.parseq;
 
 import java.util.Arrays;
 import java.util.concurrent.RecursiveAction;

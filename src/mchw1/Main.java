@@ -1,3 +1,5 @@
+package mchw1;
+
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
@@ -6,9 +8,9 @@ import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
 import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.*;
-import profiling.GraphExporter;
-import profiling.NodeData;
-import profiling.graph.Graph;
+import mchw1.profiling.GraphExporter;
+import mchw1.profiling.NodeData;
+import mchw1.profiling.graph.Graph;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,11 +134,11 @@ public class Main
 		System.out.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
-		seqseq.MergeSort merge_sort;
+		mchw1.seqseq.MergeSort merge_sort;
 		if(exec_dag == null)
-			merge_sort = new seqseq.MergeSort(array, 0, array.length, cutoff);
+			merge_sort = new mchw1.seqseq.MergeSort(array, 0, array.length, cutoff);
 		else
-			merge_sort = new seqseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
+			merge_sort = new mchw1.seqseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
 		merge_sort.execute();
@@ -160,7 +162,7 @@ public class Main
 									   array.length, cutoff));
 		
 		long time_begin = System.currentTimeMillis();
-		parseq.MergeSort merge_sort = new parseq.MergeSort(array, 0, array.length, cutoff);
+		mchw1.parseq.MergeSort merge_sort = new mchw1.parseq.MergeSort(array, 0, array.length, cutoff);
 		Main.fj_pool.invoke(merge_sort);
 		long time_end = System.currentTimeMillis();
 		assert is_sorted(array);
@@ -182,7 +184,7 @@ public class Main
 									   array.length, cutoff));
 		
 		long time_begin = System.currentTimeMillis();
-		parpar.MergeSort merge_sort = new parpar.MergeSort(array, 0, array.length, cutoff, merge_cutoff);
+		mchw1.parpar.MergeSort merge_sort = new mchw1.parpar.MergeSort(array, 0, array.length, cutoff, merge_cutoff);
 		Main.fj_pool.invoke(merge_sort);
 		long time_end = System.currentTimeMillis();
 		assert is_sorted(array);

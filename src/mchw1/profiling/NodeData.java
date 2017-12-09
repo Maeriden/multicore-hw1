@@ -1,4 +1,4 @@
-package profiling;
+package mchw1.profiling;
 
 public class NodeData
 {

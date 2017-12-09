@@ -1,7 +1,7 @@
-package seqseq;
+package mchw1.seqseq;
 
-import profiling.NodeData;
-import profiling.graph.Graph;
+import mchw1.profiling.NodeData;
+import mchw1.profiling.graph.Graph;
 
 import java.util.Arrays;
 

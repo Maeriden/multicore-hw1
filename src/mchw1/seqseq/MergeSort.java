@@ -1,4 +1,4 @@
-package seqseq;
+package mchw1.seqseq;
 
 import java.util.Arrays;
 
