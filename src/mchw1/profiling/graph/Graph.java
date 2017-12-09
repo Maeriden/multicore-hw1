@@ -5,15 +5,12 @@ import java.util.*;
 public class Graph<T>
 {
 	private final Map<T, Node<T>> nodes;
-	private int next_id;
-	
 	
 	
 	public
 	Graph()
 	{
 		this.nodes = new HashMap<>();
-		this.next_id = 1;
 	}
 	
 	
@@ -25,7 +22,7 @@ public class Graph<T>
 			return false;
 		if(this.nodes.containsKey(data))
 			return false;
-		Node<T> node = new Node<>(this.next_id++, data);
+		Node<T> node = new Node<>(data);
 		this.nodes.put(data, node);
 		return true;
 	}
@@ -59,7 +56,7 @@ public class Graph<T>
 			return false;
 		if(this.nodes.containsKey(data))
 			return false;
-		Node<T> node = new Node<>(this.next_id++, data);
+		Node<T> node = new Node<>(data);
 		this.nodes.put(data, node);
 		return true;
 	}

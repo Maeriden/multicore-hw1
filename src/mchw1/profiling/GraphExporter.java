@@ -21,9 +21,9 @@ public class GraphExporter
 	void
 	export_gexf(Graph<NodeData> graph, File file)
 	{
-		Comparator<Node<NodeData>> compare_by_id = Comparator.comparingLong(node -> node.data.time_begin_computation);
+		Comparator<Node<NodeData>> order_by_time = Comparator.comparingLong(node -> node.data.time_begin_computation);
 		List<Node<NodeData>> nodes = new ArrayList<>(graph.get_nodes());
-		nodes.sort(compare_by_id);
+		nodes.sort(order_by_time);
 		
 		
 		try
@@ -49,7 +49,7 @@ public class GraphExporter
 			Element elem_graph = doc.createElement("graph");
 			elem_graph.setAttribute("defaultedgetype", "directed");
 			elem_graph.setAttribute("idtype", "long");
-			elem_graph.setAttribute("mode", "dynamic" /*slice*/);
+			elem_graph.setAttribute("mode", "dynamic");
 			elem_graph.setAttribute("timeformat", "integer");
 			elem_root.appendChild(elem_graph);
 			
@@ -73,12 +73,14 @@ public class GraphExporter
 			elem_nodes.setAttribute("count", Integer.toString(nodes_count));
 			elem_graph.appendChild(elem_nodes);
 			
+			Map<Node<NodeData>, Long> nodes_ids = new HashMap<>();
 			for(int i = 0; i < nodes_count; ++i)
 			{
 				Node<NodeData> node = nodes.get(i);
+				nodes_ids.put(node, (long)i);
 				
 				Element elem_node = doc.createElement("node");
-				elem_node.setAttribute("id", Long.toString(node.id));
+				elem_node.setAttribute("id", Long.toString(i));
 				elem_node.setAttribute("label", Long.toString(i+1));
 				elem_node.setAttribute("start", Long.toString(i));
 				elem_nodes.appendChild(elem_node);
@@ -110,13 +112,16 @@ public class GraphExporter
 			
 			for(Node<NodeData> tail : nodes)
 			{
+				long tail_id = nodes_ids.get(tail);
 				for(Node<NodeData> head : tail.adjacents)
 				{
+					long head_id = nodes_ids.get(head);
+					long edge_id = (tail_id << 32) | (head_id & 0xFFFFFFFFL);
+					
 					Element elem_edge = doc.createElement("edge");
-					long edge_id = (tail.id << 32) | (head.id & 0xFFFFFFFFL);
 					elem_edge.setAttribute("id", Long.toString(edge_id));
-					elem_edge.setAttribute("source", Long.toString(tail.id));
-					elem_edge.setAttribute("target", Long.toString(head.id));
+					elem_edge.setAttribute("source", Long.toString(tail_id));
+					elem_edge.setAttribute("target", Long.toString(head_id));
 					elem_edges.appendChild(elem_edge);
 				}
 			}

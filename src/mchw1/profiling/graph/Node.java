@@ -5,14 +5,12 @@ import java.util.List;
 
 public class Node<T>
 {
-	public final long id;
 	public final T data;
 	public final List<Node<T>> adjacents;
 	
 	
-	Node(int id, T data)
+	Node(T data)
 	{
-		this.id = id;
 		this.data = data;
 		this.adjacents = new ArrayList<>();
 	}
