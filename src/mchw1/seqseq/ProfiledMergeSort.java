@@ -51,22 +51,14 @@ public class ProfiledMergeSort extends MergeSort
 		
 		int mid = begin + (slice_length / 2);
 		
-		//long time_begin_l = System.nanoTime() - time_epoch;
 		NodeData node_l = split(array, buffer, begin, mid, cutoff, exec_dag, time_epoch);
-		//long time_end_l = System.nanoTime() - time_epoch;
-		
-		//long time_begin_r = System.nanoTime() - time_epoch;
 		NodeData node_r = split(array, buffer, mid, end, cutoff, exec_dag, time_epoch);
-		//long time_end_r = System.nanoTime() - time_epoch;
 		
-		
-		//long time_begin_merge = System.nanoTime() - time_epoch;
 		NodeData node_merge = merge(array, buffer, begin, mid, end, exec_dag, time_epoch);
-		//long time_end_merge = System.nanoTime() - time_epoch;
-		
 		System.arraycopy(buffer, begin,
 						 array, begin,
 						 slice_length);
+		
 		long time_end_split = System.nanoTime() - time_epoch;
 		
 		
