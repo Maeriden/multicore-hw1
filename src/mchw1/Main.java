@@ -72,7 +72,7 @@ public class Main
 		if(opts.ps)
 		{
 			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
-			parallel_sequential(unsorted, split_cutoff);
+			parallel_sequential(unsorted, split_cutoff, exec_dag);
 			if(gexf != null)
 				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ps.gexf"));
 		}
@@ -155,14 +155,19 @@ public class Main
 	
 	static private
 	void
-	parallel_sequential(int[] unsorted, int cutoff)
+	parallel_sequential(int[] unsorted, int cutoff, Graph<NodeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using parallel split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
+		mchw1.parseq.MergeSort merge_sort;
+		if(exec_dag == null)
+			merge_sort = new mchw1.parseq.MergeSort(array, 0, array.length, cutoff);
+		else
+			merge_sort = new mchw1.parseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
+		
 		long time_begin = System.currentTimeMillis();
-		mchw1.parseq.MergeSort merge_sort = new mchw1.parseq.MergeSort(array, 0, array.length, cutoff);
 		Main.fj_pool.invoke(merge_sort);
 		long time_end = System.currentTimeMillis();
 		assert is_sorted(array);
