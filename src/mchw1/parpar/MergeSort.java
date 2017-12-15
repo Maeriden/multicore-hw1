@@ -69,7 +69,6 @@ public class MergeSort extends RecursiveAction
 		
 		int[] array1 = Arrays.copyOfRange(array, begin, mid);
 		int[] array2 = Arrays.copyOfRange(array, mid, end);
-//		int[] merged = parallel_merge(array1, array2, merge_cutoff);
 		Merge merger = new Merge(array1, array2, merge_cutoff);
 		int[] merged = merger.compute();
 		System.arraycopy(merged, 0,
