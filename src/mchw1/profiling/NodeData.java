@@ -6,7 +6,8 @@ public class NodeData
 	{
 		SPLIT,
 		SORT,
-		MERGE
+		MERGE,
+		MERGE_PARALLEL
 	}
 	
 	

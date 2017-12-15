@@ -25,7 +25,7 @@ public class MergeSort extends RecursiveAction
 	}
 	
 	
-	private
+	protected
 	MergeSort(int[] array, int[] buffer, int begin, int end, int split_cutoff, int merge_cutoff)
 	{
 		this.array = array;
