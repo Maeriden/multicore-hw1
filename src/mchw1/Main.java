@@ -80,7 +80,7 @@ public class Main
 		if(opts.pp)
 		{
 			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
-			parallel_parallel(unsorted, split_cutoff, merge_cutoff);
+			parallel_parallel(unsorted, split_cutoff, merge_cutoff, exec_dag);
 			if(gexf != null)
 				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".pp.gexf"));
 		}
@@ -182,14 +182,19 @@ public class Main
 	
 	static private
 	void
-	parallel_parallel(int[] unsorted, int cutoff, int merge_cutoff)
+	parallel_parallel(int[] unsorted, int split_cutoff, int merge_cutoff, Graph<NodeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
-		System.out.print(String.format("Sorting %,d integers using parallel split, parallel merge (cutoff at %d)... ",
-									   array.length, cutoff));
+		System.out.print(String.format("Sorting %,d integers using parallel split, parallel merge (split_cutoff at %d, merge_cutoff at %d)... ",
+									   array.length, split_cutoff, merge_cutoff));
+		
+		mchw1.parpar.MergeSort merge_sort;
+		if(exec_dag == null)
+			merge_sort = new mchw1.parpar.MergeSort(array, 0, array.length, split_cutoff, merge_cutoff);
+		else
+			merge_sort = new mchw1.parpar.ProfiledMergeSort(array, 0, array.length, split_cutoff, merge_cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
-		mchw1.parpar.MergeSort merge_sort = new mchw1.parpar.MergeSort(array, 0, array.length, cutoff, merge_cutoff);
 		Main.fj_pool.invoke(merge_sort);
 		long time_end = System.currentTimeMillis();
 		assert is_sorted(array);
