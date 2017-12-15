@@ -43,7 +43,8 @@ public class ProfiledMergeSort extends MergeSort
 			
 			NodeData node_sort = new NodeData(NodeData.Type.SORT,
 											  Thread.currentThread().getId(),
-											  time_begin_sort, time_end_sort);
+											  time_begin_sort, time_end_sort,
+											  0);
 			exec_dag.add_node(node_sort);
 			return node_sort;
 		}
@@ -64,7 +65,8 @@ public class ProfiledMergeSort extends MergeSort
 		
 		NodeData node_split = new NodeData(NodeData.Type.SPLIT,
 										   Thread.currentThread().getId(),
-										   time_begin_split, time_end_split);
+										   time_begin_split, time_end_split,
+										   1 + node_l.fork_count + node_r.fork_count);
 		exec_dag.add_node(node_split);
 		
 		exec_dag.add_edge(node_split, node_l);
@@ -120,7 +122,8 @@ public class ProfiledMergeSort extends MergeSort
 		
 		NodeData node_merge = new NodeData(NodeData.Type.MERGE,
 										   Thread.currentThread().getId(),
-										   time_begin_merge, time_end_merge);
+										   time_begin_merge, time_end_merge,
+										   0);
 		exec_dag.add_node(node_merge);
 		return node_merge;
 	}
