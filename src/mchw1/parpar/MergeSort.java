@@ -21,7 +21,7 @@ public class MergeSort extends RecursiveAction
 		this.end   = end;
 		this.split_cutoff = split_cutoff;
 		this.merge_cutoff = merge_cutoff;
-		this.buffer = new int[this.array.length];
+		this.buffer = null; // TODO: Single-allocation implementation
 	}
 	
 	
