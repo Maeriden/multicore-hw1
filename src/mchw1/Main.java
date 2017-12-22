@@ -41,7 +41,6 @@ public class Main
 		if(opts.array_length < 1)
 			return;
 		
-		
 		int split_cutoff = opts.split_cutoff;
 		int merge_cutoff = opts.merge_cutoff;
 		int array_length = opts.array_length;
@@ -92,7 +91,7 @@ public class Main
 	void
 	generate_descending_array(int[] result)
 	{
-		System.out.print(String.format("Creating array of %,d descending integers... ", result.length));
+		System.err.print(String.format("Creating array of %,d descending integers... ", result.length));
 		
 		long time_begin = System.currentTimeMillis();
 		for(int i = 0; i < result.length; ++i)
@@ -100,10 +99,13 @@ public class Main
 		long time_end = System.currentTimeMillis();
 		
 		long elapsed_time = time_end - time_begin;
-		System.out.println(String.format("done in %dms", elapsed_time));
+		System.err.println(String.format("done in %dms", elapsed_time));
 		if(result.length <= ARRAY_MAX_PRINT_SIZE)
-			System.out.println(Arrays.toString(result));
-		System.out.println();
+		{
+			System.err.println(Arrays.toString(result));
+			System.err.println();
+		}
+		System.err.flush();
 	}
 	
 	
@@ -111,7 +113,7 @@ public class Main
 	void
 	generate_random_array(int[] result)
 	{
-		System.out.print(String.format("Creating array of %,d random integers... ", result.length));
+		System.err.print(String.format("Creating array of %,d random integers... ", result.length));
 		
 		Random random = new Random(0);
 		long time_begin = System.currentTimeMillis();
@@ -120,10 +122,13 @@ public class Main
 		long time_end = System.currentTimeMillis();
 		
 		long elapsed_time = time_end - time_begin;
-		System.out.println(String.format("done in %dms", elapsed_time));
+		System.err.println(String.format("done in %dms", elapsed_time));
 		if(result.length <= ARRAY_MAX_PRINT_SIZE)
-			System.out.println(Arrays.toString(result));
-		System.out.println();
+		{
+			System.err.println(Arrays.toString(result));
+			System.err.println();
+		}
+		System.err.flush();
 	}
 	
 	
@@ -132,7 +137,7 @@ public class Main
 	sequential_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
-		System.out.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
+		System.err.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
 		mchw1.seqseq.MergeSort merge_sort;
@@ -147,10 +152,13 @@ public class Main
 		assert is_sorted(array);
 		
 		long elapsed_time = time_end - time_begin;
-		System.out.println(String.format("done in %dms", elapsed_time));
+		System.err.println(String.format("done in %dms", elapsed_time));
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
-			System.out.println(Arrays.toString(array));
-		System.out.println();
+			System.err.println(Arrays.toString(array));
+		System.err.println();
+		System.err.flush();
+		
+		System.out.println(Long.toString(elapsed_time));
 	}
 	
 	
@@ -159,7 +167,7 @@ public class Main
 	parallel_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
-		System.out.print(String.format("Sorting %,d integers using parallel split, sequential merge (cutoff at %d)... ",
+		System.err.print(String.format("Sorting %,d integers using parallel split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
 		mchw1.parseq.MergeSort merge_sort;
@@ -174,10 +182,13 @@ public class Main
 		assert is_sorted(array);
 		
 		long elapsed_time = time_end - time_begin;
-		System.out.println(String.format("done in %dms", elapsed_time));
+		System.err.println(String.format("done in %dms", elapsed_time));
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
-			System.out.println(Arrays.toString(array));
-		System.out.println();
+			System.err.println(Arrays.toString(array));
+		System.err.println();
+		System.err.flush();
+		
+		System.out.println(Long.toString(elapsed_time));
 	}
 	
 	
@@ -186,7 +197,7 @@ public class Main
 	parallel_parallel(int[] unsorted, int split_cutoff, int merge_cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
-		System.out.print(String.format("Sorting %,d integers using parallel split, parallel merge (split_cutoff at %d, merge_cutoff at %d)... ",
+		System.err.print(String.format("Sorting %,d integers using parallel split, parallel merge (split_cutoff at %d, merge_cutoff at %d)... ",
 									   array.length, split_cutoff, merge_cutoff));
 		
 		mchw1.parpar.MergeSort merge_sort;
@@ -201,10 +212,13 @@ public class Main
 		assert is_sorted(array);
 		
 		long elapsed_time = time_end - time_begin;
-		System.out.println(String.format("done in %dms", elapsed_time));
+		System.err.println(String.format("done in %dms", elapsed_time));
 		if(array.length <= ARRAY_MAX_PRINT_SIZE)
-			System.out.println(Arrays.toString(array));
-		System.out.println();
+			System.err.println(Arrays.toString(array));
+		System.err.println();
+		System.err.flush();
+		
+		System.out.println(Long.toString(elapsed_time));
 	}
 	
 	
