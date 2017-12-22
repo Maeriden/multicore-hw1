@@ -1,5 +1,6 @@
 package mchw1.seqseq;
 
+import mchw1.profiling.EdgeData;
 import mchw1.profiling.NodeData;
 import mchw1.profiling.graph.Graph;
 
@@ -7,11 +8,11 @@ import java.util.Arrays;
 
 public class ProfiledMergeSort extends MergeSort
 {
-	private final Graph<NodeData> exec_dag;
+	private final Graph<NodeData, EdgeData> exec_dag;
 	
 	
 	public
-	ProfiledMergeSort(int[] array, int begin, int end, int cutoff, Graph<NodeData> exec_dag)
+	ProfiledMergeSort(int[] array, int begin, int end, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		super(array, begin, end, cutoff);
 		this.exec_dag = exec_dag;
@@ -30,7 +31,7 @@ public class ProfiledMergeSort extends MergeSort
 	static private
 	NodeData
 	split(int[] array, int[] buffer, int begin, int end, int cutoff,
-		  Graph<NodeData> exec_dag, long time_epoch)
+		  Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		long time_begin_split = System.nanoTime() - time_epoch;
 		
@@ -69,11 +70,12 @@ public class ProfiledMergeSort extends MergeSort
 										   1 + node_l.fork_count + node_r.fork_count);
 		exec_dag.add_node(node_split);
 		
-		exec_dag.add_edge(node_split, node_l);
-		exec_dag.add_edge(node_split, node_r);
+		exec_dag.add_edge(node_split, node_l,     new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge(node_split, node_r,     new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge(node_split, node_merge, new EdgeData(EdgeData.Type.CALL));
 		
-		exec_dag.add_edge(node_l, node_merge);
-		exec_dag.add_edge(node_r, node_merge);
+		exec_dag.add_edge(node_l, node_merge, new EdgeData(EdgeData.Type.DATA));
+		exec_dag.add_edge(node_r, node_merge, new EdgeData(EdgeData.Type.DATA));
 		
 		return node_split;
 	}
@@ -82,7 +84,7 @@ public class ProfiledMergeSort extends MergeSort
 	static private
 	NodeData
 	merge(int[] array, int[] buffer, int begin, int mid, int end,
-		  Graph<NodeData> exec_dag, long time_epoch)
+		  Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		long time_begin_merge = System.nanoTime() - time_epoch;
 		{

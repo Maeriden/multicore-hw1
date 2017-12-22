@@ -3,24 +3,25 @@ package mchw1.profiling.graph;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Node<T>
+public class Node<V, E>
 {
-	public final T data;
-	public final List<Node<T>> adjacents;
+	public final List<Edge<E, V>> edges;
+	public final V data;
 	
 	
-	Node(T data)
+	Node(V data)
 	{
+		this.edges = new ArrayList<>();
 		this.data = data;
-		this.adjacents = new ArrayList<>();
 	}
 	
 	
 	boolean
-	add_edge(Node<T> target)
+	add_edge(Node<V, E> target, E data)
 	{
-		if(this.adjacents.contains(target))
+		if(this.edges.stream().anyMatch(e -> e.head == target))
 			return false;
-		return this.adjacents.add(target);
+		Edge<E, V> edge = new Edge<>(this, target, data);
+		return this.edges.add(edge);
 	}
 }

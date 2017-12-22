@@ -3,6 +3,7 @@ package mchw1;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import joptsimple.OptionSpec;
+import mchw1.profiling.EdgeData;
 import net.sourceforge.argparse4j.ArgumentParsers;
 import net.sourceforge.argparse4j.annotation.Arg;
 import net.sourceforge.argparse4j.helper.HelpScreenException;
@@ -63,7 +64,7 @@ public class Main
 		
 		if(opts.ss)
 		{
-			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
+			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			sequential_sequential(unsorted, split_cutoff, exec_dag);
 			if(gexf != null)
 				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ss.gexf"));
@@ -71,7 +72,7 @@ public class Main
 		
 		if(opts.ps)
 		{
-			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
+			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_sequential(unsorted, split_cutoff, exec_dag);
 			if(gexf != null)
 				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ps.gexf"));
@@ -79,7 +80,7 @@ public class Main
 		
 		if(opts.pp)
 		{
-			Graph<NodeData> exec_dag = gexf != null ? new Graph<>() : null;
+			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_parallel(unsorted, split_cutoff, merge_cutoff, exec_dag);
 			if(gexf != null)
 				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".pp.gexf"));
@@ -128,7 +129,7 @@ public class Main
 	
 	static private
 	void
-	sequential_sequential(int[] unsorted, int cutoff, Graph<NodeData> exec_dag)
+	sequential_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
@@ -155,7 +156,7 @@ public class Main
 	
 	static private
 	void
-	parallel_sequential(int[] unsorted, int cutoff, Graph<NodeData> exec_dag)
+	parallel_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using parallel split, sequential merge (cutoff at %d)... ",
@@ -182,7 +183,7 @@ public class Main
 	
 	static private
 	void
-	parallel_parallel(int[] unsorted, int split_cutoff, int merge_cutoff, Graph<NodeData> exec_dag)
+	parallel_parallel(int[] unsorted, int split_cutoff, int merge_cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
 		System.out.print(String.format("Sorting %,d integers using parallel split, parallel merge (split_cutoff at %d, merge_cutoff at %d)... ",

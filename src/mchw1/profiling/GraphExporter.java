@@ -1,5 +1,6 @@
 package mchw1.profiling;
 
+import mchw1.profiling.graph.Edge;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import mchw1.profiling.graph.Graph;
@@ -19,19 +20,25 @@ public class GraphExporter
 {
 	static public
 	void
-	export_gexf(Graph<NodeData> graph, File file)
+	export_gexf(Graph<NodeData, EdgeData> graph, File file)
 	{
-		Comparator<Node<NodeData>> order_by_time = Comparator.comparingLong(node -> node.data.time_begin_computation);
-		List<Node<NodeData>> nodes = new ArrayList<>(graph.get_nodes());
+		Comparator<Node<NodeData, EdgeData>> order_by_time = Comparator.comparingLong(node -> node.data.time_begin_computation);
+		List<Node<NodeData, EdgeData>> nodes = new ArrayList<>(graph.get_nodes());
 		nodes.sort(order_by_time);
 		
 		
 		try
 		{
-			Map<NodeData.Type, String[]> colors = new HashMap<>();
-			colors.put(NodeData.Type.SPLIT, new String[] {"255", "0", "0", "1.0"});
-			colors.put(NodeData.Type.SORT, new String[] {"0", "255", "0", "1.0"});
-			colors.put(NodeData.Type.MERGE, new String[] {"0", "0", "255", "1.0"});
+			Map<NodeData.Type, String[]> node_colors = new HashMap<>();
+			node_colors.put(NodeData.Type.SPLIT,          new String[] {"255",   "0",   "0", "1.0"});
+			node_colors.put(NodeData.Type.SORT,           new String[] {  "0", "255",   "0", "1.0"});
+			node_colors.put(NodeData.Type.MERGE,          new String[] {  "0",   "0", "255", "1.0"});
+			node_colors.put(NodeData.Type.MERGE_PARALLEL, new String[] {"100", "100", "255", "1.0"});
+			
+			Map<EdgeData.Type, String> edge_shapes = new HashMap<>();
+			edge_shapes.put(EdgeData.Type.CALL, "solid");
+			edge_shapes.put(EdgeData.Type.DATA, "dotted");
+			
 			
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			Document doc = builder.newDocument();
@@ -73,10 +80,10 @@ public class GraphExporter
 			elem_nodes.setAttribute("count", Integer.toString(nodes_count));
 			elem_graph.appendChild(elem_nodes);
 			
-			Map<Node<NodeData>, Long> nodes_ids = new HashMap<>();
+			Map<Node<NodeData, EdgeData>, Long> nodes_ids = new HashMap<>();
 			for(int i = 0; i < nodes_count; ++i)
 			{
-				Node<NodeData> node = nodes.get(i);
+				Node<NodeData, EdgeData> node = nodes.get(i);
 				nodes_ids.put(node, (long)i);
 				
 				Element elem_node = doc.createElement("node");
@@ -96,7 +103,7 @@ public class GraphExporter
 				elem_node.appendChild(elem_attvalues);
 				
 				Element elem_node_color = doc.createElement("viz:color");
-				String[] color = colors.get(node.data.type);
+				String[] color = node_colors.get(node.data.type);
 				elem_node_color.setAttribute("r", color[0]);
 				elem_node_color.setAttribute("g", color[1]);
 				elem_node_color.setAttribute("b", color[2]);
@@ -105,17 +112,17 @@ public class GraphExporter
 			}
 			
 			
-			int edges_count = nodes.stream().mapToInt(n -> n.adjacents.size()).sum();
+			int edges_count = nodes.stream().mapToInt(n -> n.edges.size()).sum();
 			Element elem_edges = doc.createElement("edges");
 			elem_edges.setAttribute("count", Integer.toString(edges_count));
 			elem_graph.appendChild(elem_edges);
 			
-			for(Node<NodeData> tail : nodes)
+			for(Node<NodeData, EdgeData> tail : nodes)
 			{
 				long tail_id = nodes_ids.get(tail);
-				for(Node<NodeData> head : tail.adjacents)
+				for(Edge<EdgeData, NodeData> edge : tail.edges)
 				{
-					long head_id = nodes_ids.get(head);
+					long head_id = nodes_ids.get(edge.head);
 					long edge_id = (tail_id << 32) | (head_id & 0xFFFFFFFFL);
 					
 					Element elem_edge = doc.createElement("edge");
@@ -123,6 +130,22 @@ public class GraphExporter
 					elem_edge.setAttribute("source", Long.toString(tail_id));
 					elem_edge.setAttribute("target", Long.toString(head_id));
 					elem_edges.appendChild(elem_edge);
+					
+					// TODO: Gephi does not yet implement edge shape visualization
+					Element elem_edge_shape = doc.createElement("viz:shape");
+					elem_edge_shape.setAttribute("value", edge_shapes.get(edge.data.type));
+					elem_edge.appendChild(elem_edge_shape);
+					
+					// TODO: For now use a different color for "dotted" edges
+					if(edge.data.type == EdgeData.Type.DATA)
+					{
+						Element elem_edge_color = doc.createElement("viz:color");
+						elem_edge_color.setAttribute("r", "255");
+						elem_edge_color.setAttribute("g",   "0");
+						elem_edge_color.setAttribute("b", "255");
+						elem_edge_color.setAttribute("a", "0.5");
+						elem_edge.appendChild(elem_edge_color);
+					}
 				}
 			}
 			

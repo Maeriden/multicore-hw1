@@ -1,5 +1,6 @@
 package mchw1.parpar;
 
+import mchw1.profiling.EdgeData;
 import mchw1.profiling.NodeData;
 import mchw1.profiling.graph.Graph;
 import mchw1.utils.Tuple2;
@@ -13,14 +14,14 @@ import static java.util.Arrays.binarySearch;
 
 class ProfiledMerge extends Merge
 {
-	private final Graph<NodeData> exec_dag;
+	private final Graph<NodeData, EdgeData> exec_dag;
 	private final long time_epoch;
 	
 	NodeData node_dag;
 	
 	
 	ProfiledMerge(int[] slice_l, int[] slice_r, int cutoff,
-	              Graph<NodeData> exec_dag, long time_epoch)
+	              Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		super(slice_l, slice_r, cutoff);
 		this.exec_dag = exec_dag;
@@ -41,7 +42,7 @@ class ProfiledMerge extends Merge
 	static private
 	Tuple2<int[], NodeData>
 	parallel_merge(int[] array1, int[] array2, int cutoff,
-	               Graph<NodeData> exec_dag, long time_epoch)
+	               Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		if(array1.length + array2.length <= cutoff)
 		{
@@ -109,8 +110,8 @@ class ProfiledMerge extends Merge
 		                                   1 + node_1.fork_count + node_2.fork_count);
 		exec_dag.add_node_async(node_merge);
 		
-		exec_dag.add_edge_async(node_merge, node_1);
-		exec_dag.add_edge_async(node_merge, node_2);
+		exec_dag.add_edge_async(node_merge, node_1, new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge_async(node_merge, node_2, new EdgeData(EdgeData.Type.CALL));
 		
 		return new Tuple2<>(result, node_merge);
 	}
@@ -119,7 +120,7 @@ class ProfiledMerge extends Merge
 	static private
 	Tuple2<int[], NodeData>
 	merge(int[] array1, int[] array2,
-	      Graph<NodeData> exec_dag, long time_epoch)
+	      Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		int[] result;
 		long time_begin_merge = System.nanoTime() - time_epoch;
