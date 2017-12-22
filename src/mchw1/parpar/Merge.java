@@ -52,7 +52,11 @@ class Merge extends RecursiveTask<int[]>
 		int[] small = array1.length <= array2.length ? array1 : array2;
 		
 		int median = large.length / 2;
-		int small_index = Math.abs(Arrays.binarySearch(small, 0, small.length, large[median])) - 1;
+		int small_index = Arrays.binarySearch(small, 0, small.length, large[median]);
+		if (small_index < 0)
+		{
+			small_index = ~small_index;
+		}
 		
 		int[] result = new int[large.length + small.length];
 		
