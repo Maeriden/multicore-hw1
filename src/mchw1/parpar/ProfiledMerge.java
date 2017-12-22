@@ -32,7 +32,8 @@ class ProfiledMerge extends Merge
 	@Override
 	protected int[] compute()
 	{
-		Tuple2<int[], NodeData> result = parallel_merge(this.slice_l, this.slice_r, this.cutoff,
+		// TODO: Compute begin and end indices
+		Tuple2<int[], NodeData> result = parallel_merge(this.slice_l, this.slice_r, 0, 0, 0, 0, this.cutoff,
 		                                                this.exec_dag, this.time_epoch);
 		this.node_dag = result.b;
 		return result.a;
@@ -41,13 +42,13 @@ class ProfiledMerge extends Merge
 	
 	static private
 	Tuple2<int[], NodeData>
-	parallel_merge(int[] array1, int[] array2, int cutoff,
+	parallel_merge(int[] array1, int[] array2, int begin1, int end1, int begin2, int end2, int cutoff,
 	               Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		if(array1.length + array2.length <= cutoff)
 		{
 			//noinspection UnnecessaryLocalVariable
-			Tuple2<int[], NodeData> result = merge(array1, array2,
+			Tuple2<int[], NodeData> result = merge(array1, array2, begin1, end1, begin2, end2,
 			                                       exec_dag, time_epoch);
 			return result;
 		}
@@ -65,6 +66,7 @@ class ProfiledMerge extends Merge
 			NodeData node_merge = new NodeData(NodeData.Type.MERGE,
 			                                   Thread.currentThread().getId(),
 			                                   time_begin_merge, time_end_merge,
+			                                   begin1, end1, begin2, end2,
 			                                   0);
 			return new Tuple2<>(result, node_merge);
 		}
@@ -107,6 +109,7 @@ class ProfiledMerge extends Merge
 		NodeData node_merge = new NodeData(NodeData.Type.MERGE_PARALLEL,
 		                                   Thread.currentThread().getId(),
 		                                   time_begin_merge, time_end_merge,
+		                                   begin1, end1, begin2, end2,
 		                                   1 + node_1.fork_count + node_2.fork_count);
 		exec_dag.add_node_async(node_merge);
 		
@@ -119,7 +122,7 @@ class ProfiledMerge extends Merge
 	
 	static private
 	Tuple2<int[], NodeData>
-	merge(int[] array1, int[] array2,
+	merge(int[] array1, int[] array2, int begin1, int end1, int begin2, int end2,
 	      Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
 		int[] result;
@@ -159,6 +162,7 @@ class ProfiledMerge extends Merge
 		NodeData node_merge = new NodeData(NodeData.Type.MERGE,
 		                                   Thread.currentThread().getId(),
 		                                   time_begin_merge, time_end_merge,
+		                                   begin1, end1, begin2, end2,
 		                                   0);
 		exec_dag.add_node_async(node_merge);
 		

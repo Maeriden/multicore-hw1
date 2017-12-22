@@ -68,8 +68,19 @@ public class GraphExporter
 				
 				Element elem_attribute = doc.createElement("attribute");
 				elem_attribute.setAttribute("id", "0");
-				elem_attribute.setAttribute("title", "time_execution");
 				elem_attribute.setAttribute("type", "integer");
+				elem_attribute.setAttribute("title", "time_execution");
+				elem_attributes.appendChild(elem_attribute);
+				
+				elem_attribute = doc.createElement("attribute");
+				elem_attribute.setAttribute("id", "1");
+				elem_attribute.setAttribute("type", "integer");
+				elem_attribute.setAttribute("title", "thread_id");
+				
+				elem_attribute = doc.createElement("attribute");
+				elem_attribute.setAttribute("id", "2");
+				elem_attribute.setAttribute("type", "string");
+				elem_attribute.setAttribute("title", "slice");
 				elem_attributes.appendChild(elem_attribute);
 			}
 			elem_graph.appendChild(elem_attributes);
@@ -87,9 +98,9 @@ public class GraphExporter
 				nodes_ids.put(node, (long)i);
 				
 				Element elem_node = doc.createElement("node");
-				elem_node.setAttribute("id", Long.toString(i));
-				elem_node.setAttribute("label", Long.toString(i+1));
-				elem_node.setAttribute("start", Long.toString(i));
+				elem_node.setAttribute("id",    get_node_id(node, i));
+				elem_node.setAttribute("label", get_node_label(node, i));
+				elem_node.setAttribute("start", get_node_start(node, i));
 				elem_nodes.appendChild(elem_node);
 				
 				Element elem_attvalues = doc.createElement("attvalues");
@@ -98,6 +109,17 @@ public class GraphExporter
 					Element elem_attvalue = doc.createElement("attvalue");
 					elem_attvalue.setAttribute("for", "0");
 					elem_attvalue.setAttribute("value", Long.toString(time_execution));
+					elem_attvalues.appendChild(elem_attvalue);
+					
+					elem_attvalue = doc.createElement("attvalue");
+					elem_attvalue.setAttribute("for", "1");
+					elem_attvalue.setAttribute("value", Long.toString(node.data.thread_id));
+					elem_attvalues.appendChild(elem_attvalue);
+					
+					String slice = String.format("[%d, %d)", node.data.slice_1_begin, node.data.slice_1_end);
+					elem_attvalue = doc.createElement("attvalue");
+					elem_attvalue.setAttribute("for", "2");
+					elem_attvalue.setAttribute("value", slice);
 					elem_attvalues.appendChild(elem_attvalue);
 				}
 				elem_node.appendChild(elem_attvalues);
@@ -160,5 +182,30 @@ public class GraphExporter
 		{
 			exception.printStackTrace();
 		}
+	}
+	
+	
+	static private
+	String
+	get_node_id(Node<NodeData, EdgeData> node, int i)
+	{
+		return Long.toString(i);
+	}
+	
+	
+	static private
+	String
+	get_node_label(Node<NodeData, EdgeData> node, int i)
+	{
+//		return Long.toString(i+1);
+		return Long.toString(node.data.thread_id);
+	}
+	
+	
+	static private
+	String
+	get_node_start(Node<NodeData, EdgeData> node, int i)
+	{
+		return Long.toString(i);
 	}
 }

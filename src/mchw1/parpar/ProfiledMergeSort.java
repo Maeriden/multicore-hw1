@@ -62,6 +62,7 @@ public class ProfiledMergeSort extends MergeSort
 			NodeData node_sort = new NodeData(NodeData.Type.SORT,
 			                                  Thread.currentThread().getId(),
 			                                  time_begin_sort, time_end_sort,
+			                                  begin, end,
 			                                  0);
 			exec_dag.add_node_async(node_sort);
 			return node_sort;
@@ -101,6 +102,7 @@ public class ProfiledMergeSort extends MergeSort
 		NodeData node_split = new NodeData(NodeData.Type.SPLIT,
 		                                   Thread.currentThread().getId(),
 		                                   time_begin_split, time_end_split,
+		                                   begin, end,
 		                                   1 + node_l.fork_count + node_r.fork_count + node_merge.fork_count);
 		exec_dag.add_node_async(node_split);
 		
