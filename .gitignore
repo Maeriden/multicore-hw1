@@ -1,6 +1,5 @@
 .idea/
 bin/
-lib/
 out/
 
 *.javac
