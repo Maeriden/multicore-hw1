@@ -28,8 +28,6 @@ public class Main
 		CommandLineOptions opts = argparse4j_get_command_line_options(args);
 		if(opts == null)
 			return;
-		if(!opts.ss && !opts.ps && !opts.pp)
-			return;
 		if(opts.split_cutoff < 1)
 			return;
 		if(opts.merge_cutoff < 1)
@@ -41,44 +39,57 @@ public class Main
 		int merge_cutoff = opts.merge_cutoff;
 		int array_length = opts.array_length;
 		String gexf = opts.gexf;
+		boolean build_dag = (opts.print_fork) || (opts.gexf != null);
 		
 		
-		String generation_type;
 		int[] unsorted = new int[array_length];
 		if(opts.desc)
 		{
-			generation_type = "desc";
 			generate_descending_array(unsorted);
 		}
 		else
 		{
-			generation_type = "rand";
 			generate_random_array(unsorted);
 		}
 		
 		
-		if(opts.ss)
+		Graph<NodeData, EdgeData> exec_dag = build_dag ? new Graph<>() : null;
+		long exec_time = -1;
+		
+		switch(opts.algo)
 		{
-			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
-			sequential_sequential(unsorted, split_cutoff, exec_dag);
-			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
+			case SEQ_SEQ:
+			{
+				exec_time = sequential_sequential(unsorted, split_cutoff, exec_dag);
+			} break;
+			
+			case PAR_SEQ:
+			{
+				exec_time = parallel_sequential(unsorted, split_cutoff, exec_dag);
+			} break;
+			
+			case PAR_PAR:
+			{
+				exec_time = parallel_parallel(unsorted, split_cutoff, merge_cutoff, exec_dag);
+			} break;
 		}
 		
-		if(opts.ps)
+		
+		if(gexf != null)
 		{
-			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
-			parallel_sequential(unsorted, split_cutoff, exec_dag);
-			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
+			GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
 		}
 		
-		if(opts.pp)
+		
+		if(opts.print_fork)
 		{
-			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
-			parallel_parallel(unsorted, split_cutoff, merge_cutoff, exec_dag);
-			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
+			assert exec_dag != null;
+			int fork_count = get_fork_count(exec_dag);
+			System.out.println(Integer.toString(fork_count));
+		}
+		else
+		{
+			System.out.println(Long.toString(exec_time));
 		}
 	}
 	
@@ -129,7 +140,7 @@ public class Main
 	
 	
 	static private
-	void
+	long
 	sequential_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
@@ -154,12 +165,12 @@ public class Main
 		System.err.println();
 		System.err.flush();
 		
-		System.out.println(Long.toString(elapsed_time));
+		return elapsed_time;
 	}
 	
 	
 	static private
-	void
+	long
 	parallel_sequential(int[] unsorted, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
@@ -184,12 +195,12 @@ public class Main
 		System.err.println();
 		System.err.flush();
 		
-		System.out.println(Long.toString(elapsed_time));
+		return elapsed_time;
 	}
 	
 	
 	static private
-	void
+	long
 	parallel_parallel(int[] unsorted, int split_cutoff, int merge_cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
 		int[] array = Arrays.copyOf(unsorted, unsorted.length);
@@ -214,7 +225,7 @@ public class Main
 		System.err.println();
 		System.err.flush();
 		
-		System.out.println(Long.toString(elapsed_time));
+		return elapsed_time;
 	}
 	
 	
@@ -232,50 +243,58 @@ public class Main
 	
 	
 	static private
+	int
+	get_fork_count(Graph<NodeData, EdgeData> exec_dag)
+	{
+		return exec_dag.get_nodes().stream().mapToInt(n -> n.data.fork_count).max().orElse(0);
+	}
+	
+	
+	static private
 	CommandLineOptions
 	argparse4j_get_command_line_options(String[] args)
 	{
 		ArgumentParser argp = ArgumentParsers.newFor("mergesort").build()
-											 .defaultHelp(true);
+											 .defaultHelp(false);
 		
 		ArgumentGroup group_algorithm = argp.addArgumentGroup("Algorithms");
-		group_algorithm.addArgument("--ss")
-					   .action(Arguments.storeTrue())
-					   .help("Run sequential-sequential merge sort");
-		group_algorithm.addArgument("--ps")
-					   .action(Arguments.storeTrue())
-					   .help("Run parallel-sequential merge sort");
-		group_algorithm.addArgument("--pp")
-					   .action(Arguments.storeTrue())
-					   .help("Run parallel-parallel merge sort");
+		group_algorithm.addArgument("--algo")
+		            .type(Arguments.caseInsensitiveEnumStringType(AlgorithmType.class))
+		            .setDefault(AlgorithmType.SEQ_SEQ)
+		            .help("Algorithm used for sorting (default: ss)");
 		
 		ArgumentGroup group_generation = argp.addArgumentGroup("Number generation");
 		group_generation.addArgument("--desc")
 						.action(Arguments.storeTrue())
-						.help("Generate descending numbers (N-1, N-2, ..., 0)");
+						.help("Generate descending numbers [N, 1] (default: random numbers)");
 		
 		ArgumentGroup group_tuning = argp.addArgumentGroup("Tuning");
 		group_tuning.addArgument("--split-cutoff")
 					.type(int.class)
 					.setDefault(1)
 					.metavar("CUTOFF")
-					.help("Cutoff value for the divide operation");
+					.help("Cutoff value for the divide operation (default: 1)");
 		group_tuning.addArgument("--merge-cutoff")
 					.type(int.class)
 					.setDefault(1)
 					.metavar("CUTOFF")
-					.help("Cutoff value for the conquer operation");
+					.help("Cutoff value for the conquer operation (default: 1)");
 		
 		ArgumentGroup group_profiling = argp.addArgumentGroup("Profiling");
 		group_profiling.addArgument("--gexf")
 					   .metavar("PATH")
 					   .help("Dump execution data into a gexf file at the given PATH (do not include file extension)");
+		group_profiling.addArgument("--fork")
+		               .action(Arguments.storeTrue())
+		               .setDefault(false)
+		               .dest("print_fork")
+		               .help("Print fork count to stdout (default: print execution time)");
 		
 		argp.addArgument("array-length")
 			.type(int.class)
 			.required(true)
 			.metavar("N")
-			.help("Amount of numbers to sort (will be [N-1, 0] with --desc)");
+			.help("Amount of numbers to sort");
 		
 		try
 		{
@@ -297,14 +316,21 @@ public class Main
 }
 
 
+enum AlgorithmType
+{
+	SEQ_SEQ { public String toString() { return "ss"; } },
+	PAR_SEQ { public String toString() { return "ps"; } },
+	PAR_PAR { public String toString() { return "pp"; } }
+}
+
+
 class CommandLineOptions
 {
-	@Arg boolean ss;
-	@Arg boolean ps;
-	@Arg boolean pp;
+	@Arg AlgorithmType algo;
 	@Arg boolean desc;
 	@Arg int split_cutoff;
 	@Arg int merge_cutoff;
 	@Arg int array_length;
 	@Arg String gexf;
+	@Arg boolean print_fork;
 }
