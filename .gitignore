@@ -3,5 +3,6 @@ bin/
 lib/
 out/
 
+*.javac
 *.iml
 *.gexf
