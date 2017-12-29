@@ -110,8 +110,8 @@ public class ProfiledMergeSort extends MergeSort
 		exec_dag.add_edge_async(node_split, node_r,     new EdgeData(EdgeData.Type.CALL));
 		exec_dag.add_edge_async(node_split, node_merge, new EdgeData(EdgeData.Type.CALL));
 		
-		exec_dag.add_edge_async(node_l, node_merge, new EdgeData(EdgeData.Type.DATA));
-		exec_dag.add_edge_async(node_r, node_merge, new EdgeData(EdgeData.Type.DATA));
+		exec_dag.add_edge_async(node_merge, node_l, new EdgeData(EdgeData.Type.DATA));
+		exec_dag.add_edge_async(node_merge, node_r, new EdgeData(EdgeData.Type.DATA));
 		
 		return node_split;
 	}

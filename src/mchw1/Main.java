@@ -62,7 +62,7 @@ public class Main
 			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			sequential_sequential(unsorted, split_cutoff, exec_dag);
 			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ss.gexf"));
+				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
 		}
 		
 		if(opts.ps)
@@ -70,7 +70,7 @@ public class Main
 			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_sequential(unsorted, split_cutoff, exec_dag);
 			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".ps.gexf"));
+				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
 		}
 		
 		if(opts.pp)
@@ -78,7 +78,7 @@ public class Main
 			Graph<NodeData, EdgeData> exec_dag = gexf != null ? new Graph<>() : null;
 			parallel_parallel(unsorted, split_cutoff, merge_cutoff, exec_dag);
 			if(gexf != null)
-				GraphExporter.export_gexf(exec_dag, new File(gexf + "." + generation_type + ".pp.gexf"));
+				GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
 		}
 	}
 	
@@ -269,13 +269,13 @@ public class Main
 		ArgumentGroup group_profiling = argp.addArgumentGroup("Profiling");
 		group_profiling.addArgument("--gexf")
 					   .metavar("PATH")
-					   .help("File name to write gexf-formatted execution data (do not include file extension)");
+					   .help("Dump execution data into a gexf file at the given PATH (do not include file extension)");
 		
 		argp.addArgument("array-length")
 			.type(int.class)
 			.required(true)
 			.metavar("N")
-			.help("Amount of numbers to sort (will be [N..1] with --desc)");
+			.help("Amount of numbers to sort (will be [N-1, 0] with --desc)");
 		
 		try
 		{
