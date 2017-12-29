@@ -46,9 +46,9 @@ public class GraphExporter
 			
 			
 			Element elem_root = doc.createElementNS("http://www.gexf.net/1.3draft", "gexf");
-			elem_root.setAttribute("xmlns:xsi", "”http://www.w3.org/2001/XMLSchema-instance");
-			elem_root.setAttribute("xsi:schemaLocation", "”http://www.gexf.net/1.3draft http://www.gexf.net/1.3draft/gexf.xsd");
-			elem_root.setAttribute("xmlns:viz", "”http://www.gexf.net/1.2draft/viz");
+			elem_root.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
+			elem_root.setAttribute("xsi:schemaLocation", "http://www.gexf.net/1.3draft http://www.gexf.net/1.3draft/gexf.xsd");
+			elem_root.setAttribute("xmlns:viz", "http://www.gexf.net/1.2draft/viz");
 			elem_root.setAttribute("version", "1.3");
 			doc.appendChild(elem_root);
 			
