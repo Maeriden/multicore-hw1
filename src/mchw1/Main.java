@@ -29,32 +29,30 @@ public class Main
 		if(opts == null)
 			return;
 		if(opts.split_cutoff < 1)
-			return;
+			throw new IllegalArgumentException("split-cutoff must be > 0");
 		if(opts.merge_cutoff < 1)
-			return;
+			throw new IllegalArgumentException("merge-cutoff must be > 0");
 		if(opts.array_length < 1)
-			return;
+			throw new IllegalArgumentException("Array is empty");
 		
-		int split_cutoff = opts.split_cutoff;
-		int merge_cutoff = opts.merge_cutoff;
-		int array_length = opts.array_length;
-		String gexf = opts.gexf;
-		boolean build_dag = (opts.print_fork) || (opts.gexf != null);
+		int     split_cutoff = opts.split_cutoff;
+		int     merge_cutoff = opts.merge_cutoff;
+		int     array_length = opts.array_length;
+		String  gexf         = opts.gexf;
+		boolean do_build_dag = (opts.print_fork) || (opts.gexf != null);
 		
 		
 		int[] unsorted = new int[array_length];
 		if(opts.desc)
-		{
 			generate_descending_array(unsorted);
-		}
 		else
-		{
 			generate_random_array(unsorted);
-		}
 		
 		
-		Graph<NodeData, EdgeData> exec_dag = build_dag ? new Graph<>() : null;
-		long exec_time = -1;
+		long                      exec_time = -1;
+		Graph<NodeData, EdgeData> exec_dag  = null;
+		if(do_build_dag)
+			exec_dag = new Graph<>();
 		
 		switch(opts.algo)
 		{
@@ -75,9 +73,10 @@ public class Main
 		}
 		
 		
-		if(gexf != null)
+		if(opts.gexf != null)
 		{
-			GraphExporter.export_gexf(exec_dag, new File(gexf + ".gexf"));
+			assert exec_dag != null;
+			GraphExporter.export_gexf(exec_dag, new File(opts.gexf + ".gexf"));
 		}
 		
 		
@@ -259,7 +258,7 @@ public class Main
 		
 		ArgumentGroup group_algorithm = argp.addArgumentGroup("Algorithms");
 		group_algorithm.addArgument("--algo")
-		            .type(Arguments.caseInsensitiveEnumStringType(AlgorithmType.class))
+		            .type(Arguments.enumStringType(AlgorithmType.class))
 		            .setDefault(AlgorithmType.SEQ_SEQ)
 		            .help("Algorithm used for sorting (default: ss)");
 		
@@ -286,7 +285,6 @@ public class Main
 					   .help("Dump execution data into a gexf file at the given PATH (do not include file extension)");
 		group_profiling.addArgument("--fork")
 		               .action(Arguments.storeTrue())
-		               .setDefault(false)
 		               .dest("print_fork")
 		               .help("Print fork count to stdout (default: print execution time)");
 		
