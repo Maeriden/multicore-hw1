@@ -81,6 +81,11 @@ public class GraphExporter
 				elem_attribute.setAttribute("id", "2");
 				elem_attribute.setAttribute("type", "string");
 				elem_attribute.setAttribute("title", "slice");
+				
+				elem_attribute = doc.createElement("attribute");
+				elem_attribute.setAttribute("id", "3");
+				elem_attribute.setAttribute("type", "integer");
+				elem_attribute.setAttribute("title", "fork_count");
 				elem_attributes.appendChild(elem_attribute);
 			}
 			elem_graph.appendChild(elem_attributes);
@@ -118,6 +123,11 @@ public class GraphExporter
 					elem_attvalue = doc.createElement("attvalue");
 					elem_attvalue.setAttribute("for", "2"); // slice
 					elem_attvalue.setAttribute("value", get_node_slice(node, i));
+					elem_attvalues.appendChild(elem_attvalue);
+					
+					elem_attvalue = doc.createElement("attvalue");
+					elem_attvalue.setAttribute("for", "3"); // fork_count
+					elem_attvalue.setAttribute("value", get_node_fork_count(node, i));
 					elem_attvalues.appendChild(elem_attvalue);
 				}
 				elem_node.appendChild(elem_attvalues);
@@ -228,5 +238,13 @@ public class GraphExporter
 	get_node_slice(Node<NodeData, EdgeData> node, int i)
 	{
 		return String.format("[%d, %d)", node.data.slice_1_begin, node.data.slice_1_end);
+	}
+	
+	
+	static private
+	String
+	get_node_fork_count(Node<NodeData, EdgeData> node, int i)
+	{
+		return node.data.fork_count > 0 ? Long.toString(node.data.fork_count) : "";
 	}
 }
