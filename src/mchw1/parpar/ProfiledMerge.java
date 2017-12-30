@@ -79,16 +79,20 @@ class ProfiledMerge extends Merge
 			int[] large = array1.length >  array2.length ? array1 : array2;
 			int[] small = array1.length <= array2.length ? array1 : array2;
 			
-			int large_median = large.length / 2;
-			int small_index = abs(binarySearch(small, 0, small.length, large[large_median])) - 1;
+			int median = large.length / 2;
+			int small_index = Arrays.binarySearch(small, 0, small.length, large[median]);
+			if (small_index < 0)
+			{
+				small_index = ~small_index;
+			}
 			
 			
-			int[] s0 = Arrays.copyOfRange(large, 0, large_median);
+			int[] s0 = Arrays.copyOfRange(large, 0, median);
 			int[] s1 = Arrays.copyOfRange(small, 0, small_index);
 			merge_1 = new ProfiledMerge(s0, s1, cutoff,
 			                            exec_dag, time_epoch);
 			
-			s0 = Arrays.copyOfRange(large, large_median, large.length);
+			s0 = Arrays.copyOfRange(large, median, large.length);
 			s1 = Arrays.copyOfRange(small, small_index, small.length);
 			merge_2 = new ProfiledMerge(s0, s1, cutoff,
 			                            exec_dag, time_epoch);
