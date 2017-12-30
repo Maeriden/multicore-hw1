@@ -1,4 +1,4 @@
-package mchw1.parpar;
+package mchw1.algorithms.parpar;
 
 
 import java.util.Arrays;

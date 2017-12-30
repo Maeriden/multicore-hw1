@@ -1,9 +1,8 @@
-package mchw1.parseq;
+package mchw1.algorithms.seqseq;
 
 import java.util.Arrays;
-import java.util.concurrent.RecursiveAction;
 
-public class MergeSort extends RecursiveAction
+public class MergeSort
 {
 	protected final int[] array;
 	protected final int[] buffer;
@@ -23,21 +22,9 @@ public class MergeSort extends RecursiveAction
 	}
 	
 	
-	protected
-	MergeSort(int[] array, int[] buffer, int begin, int end, int split_cutoff)
-	{
-		this.array = array;
-		this.begin = begin;
-		this.end   = end;
-		this.split_cutoff = split_cutoff;
-		this.buffer = buffer;
-	}
-	
-	
-	@Override
-	protected
+	public
 	void
-	compute()
+	execute()
 	{
 		split(this.array, this.buffer, this.begin, this.end, this.split_cutoff);
 	}
@@ -47,8 +34,6 @@ public class MergeSort extends RecursiveAction
 	void
 	split(int[] array, int[] buffer, int begin, int end, int cutoff)
 	{
-		assert RecursiveAction.inForkJoinPool();
-		
 		int slice_length = end - begin;
 		if(slice_length <= cutoff)
 		{
@@ -57,12 +42,8 @@ public class MergeSort extends RecursiveAction
 		}
 		
 		int mid = begin + (slice_length / 2);
-		MergeSort left = new MergeSort(array, buffer, begin, mid, cutoff);
-		MergeSort right = new MergeSort(array, buffer, mid, end, cutoff);
-		
-		right.fork();
-		left.compute();
-		right.join();
+		split(array, buffer, begin, mid, cutoff);
+		split(array, buffer, mid, end, cutoff);
 		
 		merge(array, buffer, begin, mid, end);
 		System.arraycopy(buffer, begin,

@@ -146,11 +146,11 @@ public class Main
 		System.err.print(String.format("Sorting %,d integers using sequential split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
-		mchw1.seqseq.MergeSort merge_sort;
+		mchw1.algorithms.seqseq.MergeSort merge_sort;
 		if(exec_dag == null)
-			merge_sort = new mchw1.seqseq.MergeSort(array, 0, array.length, cutoff);
+			merge_sort = new mchw1.algorithms.seqseq.MergeSort(array, 0, array.length, cutoff);
 		else
-			merge_sort = new mchw1.seqseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
+			merge_sort = new mchw1.algorithms.seqseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
 		merge_sort.execute();
@@ -176,11 +176,11 @@ public class Main
 		System.err.print(String.format("Sorting %,d integers using parallel split, sequential merge (cutoff at %d)... ",
 									   array.length, cutoff));
 		
-		mchw1.parseq.MergeSort merge_sort;
+		mchw1.algorithms.parseq.MergeSort merge_sort;
 		if(exec_dag == null)
-			merge_sort = new mchw1.parseq.MergeSort(array, 0, array.length, cutoff);
+			merge_sort = new mchw1.algorithms.parseq.MergeSort(array, 0, array.length, cutoff);
 		else
-			merge_sort = new mchw1.parseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
+			merge_sort = new mchw1.algorithms.parseq.ProfiledMergeSort(array, 0, array.length, cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
 		Main.fj_pool.invoke(merge_sort);
@@ -206,11 +206,11 @@ public class Main
 		System.err.print(String.format("Sorting %,d integers using parallel split, parallel merge (split_cutoff at %d, merge_cutoff at %d)... ",
 									   array.length, split_cutoff, merge_cutoff));
 		
-		mchw1.parpar.MergeSort merge_sort;
+		mchw1.algorithms.parpar.MergeSort merge_sort;
 		if(exec_dag == null)
-			merge_sort = new mchw1.parpar.MergeSort(array, 0, array.length, split_cutoff, merge_cutoff);
+			merge_sort = new mchw1.algorithms.parpar.MergeSort(array, 0, array.length, split_cutoff, merge_cutoff);
 		else
-			merge_sort = new mchw1.parpar.ProfiledMergeSort(array, 0, array.length, split_cutoff, merge_cutoff, exec_dag);
+			merge_sort = new mchw1.algorithms.parpar.ProfiledMergeSort(array, 0, array.length, split_cutoff, merge_cutoff, exec_dag);
 		
 		long time_begin = System.currentTimeMillis();
 		Main.fj_pool.invoke(merge_sort);

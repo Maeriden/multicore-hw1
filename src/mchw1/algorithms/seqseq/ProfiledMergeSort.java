@@ -1,47 +1,30 @@
-package mchw1.parseq;
+package mchw1.algorithms.seqseq;
 
 import mchw1.profiling.EdgeData;
 import mchw1.profiling.NodeData;
 import mchw1.profiling.graph.Graph;
 
 import java.util.Arrays;
-import java.util.concurrent.RecursiveAction;
 
 public class ProfiledMergeSort extends MergeSort
 {
 	private final Graph<NodeData, EdgeData> exec_dag;
-	private final long time_epoch;
-	
-	private NodeData node_dag;
 	
 	
 	public
-	ProfiledMergeSort(int[] array, int begin, int end, int split_cutoff,
-					  Graph<NodeData, EdgeData> exec_dag)
+	ProfiledMergeSort(int[] array, int begin, int end, int cutoff, Graph<NodeData, EdgeData> exec_dag)
 	{
-		super(array, begin, end, split_cutoff);
+		super(array, begin, end, cutoff);
 		this.exec_dag = exec_dag;
-		this.time_epoch = System.nanoTime();
 	}
 	
 	
-	private
-	ProfiledMergeSort(int[] array, int[] buffer, int begin, int end, int split_cutoff,
-					  Graph<NodeData, EdgeData> exec_dag, long time_epoch)
-	{
-		super(array, buffer, begin, end, split_cutoff);
-		this.exec_dag = exec_dag;
-		this.time_epoch = time_epoch;
-	}
-	
-	
-	@Override
-	protected
+	public
 	void
-	compute()
+	execute()
 	{
-		this.node_dag = split(this.array, this.buffer, this.begin, this.end, this.split_cutoff,
-							  this.exec_dag, this.time_epoch);
+		split(super.array, super.buffer, super.begin, super.end, super.split_cutoff,
+			  this.exec_dag, System.nanoTime());
 	}
 	
 	
@@ -50,8 +33,6 @@ public class ProfiledMergeSort extends MergeSort
 	split(int[] array, int[] buffer, int begin, int end, int cutoff,
 		  Graph<NodeData, EdgeData> exec_dag, long time_epoch)
 	{
-		assert RecursiveAction.inForkJoinPool();
-		
 		long time_begin_split = System.nanoTime() - time_epoch;
 		
 		int slice_length = end - begin;
@@ -66,41 +47,37 @@ public class ProfiledMergeSort extends MergeSort
 											  time_begin_sort, time_end_sort,
 											  begin, end,
 											  0);
-			exec_dag.add_node_async(node_sort);
+			exec_dag.add_node(node_sort);
 			return node_sort;
 		}
 		
-		int mid = begin + (slice_length / 2);
-		ProfiledMergeSort left = new ProfiledMergeSort(array, buffer, begin, mid, cutoff, exec_dag, time_epoch);
-		ProfiledMergeSort right = new ProfiledMergeSort(array, buffer, mid, end, cutoff, exec_dag, time_epoch);
 		
-		right.fork();
-		left.compute();
-		right.join();
+		int mid = begin + (slice_length / 2);
+		
+		NodeData node_l = split(array, buffer, begin, mid, cutoff, exec_dag, time_epoch);
+		NodeData node_r = split(array, buffer, mid, end, cutoff, exec_dag, time_epoch);
 		
 		NodeData node_merge = merge(array, buffer, begin, mid, end, exec_dag, time_epoch);
 		System.arraycopy(buffer, begin,
 						 array, begin,
-						 end - begin);
+						 slice_length);
 		
 		long time_end_split = System.nanoTime() - time_epoch;
 		
 		
-		NodeData node_l = left.node_dag;
-		NodeData node_r = right.node_dag;
 		NodeData node_split = new NodeData(NodeData.Type.SPLIT,
 										   Thread.currentThread().getId(),
 										   time_begin_split, time_end_split,
 										   begin, end,
 										   1 + node_l.fork_count + node_r.fork_count);
-		exec_dag.add_node_async(node_split);
+		exec_dag.add_node(node_split);
 		
-		exec_dag.add_edge_async(node_split, node_l,     new EdgeData(EdgeData.Type.CALL));
-		exec_dag.add_edge_async(node_split, node_r,     new EdgeData(EdgeData.Type.CALL));
-		exec_dag.add_edge_async(node_split, node_merge, new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge(node_split, node_l,     new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge(node_split, node_r,     new EdgeData(EdgeData.Type.CALL));
+		exec_dag.add_edge(node_split, node_merge, new EdgeData(EdgeData.Type.CALL));
 		
-		exec_dag.add_edge_async(node_merge, node_l, new EdgeData(EdgeData.Type.DATA));
-		exec_dag.add_edge_async(node_merge, node_r, new EdgeData(EdgeData.Type.DATA));
+		exec_dag.add_edge(node_merge, node_l, new EdgeData(EdgeData.Type.DATA));
+		exec_dag.add_edge(node_merge, node_r, new EdgeData(EdgeData.Type.DATA));
 		
 		return node_split;
 	}
@@ -152,7 +129,7 @@ public class ProfiledMergeSort extends MergeSort
 										   time_begin_merge, time_end_merge,
 										   begin, mid, mid, end,
 										   0);
-		exec_dag.add_node_async(node_merge);
+		exec_dag.add_node(node_merge);
 		return node_merge;
 	}
 }
