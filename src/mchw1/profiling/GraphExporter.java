@@ -105,21 +105,19 @@ public class GraphExporter
 				
 				Element elem_attvalues = doc.createElement("attvalues");
 				{
-					long time_execution = node.data.time_end_computation - node.data.time_begin_computation;
 					Element elem_attvalue = doc.createElement("attvalue");
-					elem_attvalue.setAttribute("for", "0");
-					elem_attvalue.setAttribute("value", Long.toString(time_execution));
+					elem_attvalue.setAttribute("for", "0"); // time_execution
+					elem_attvalue.setAttribute("value", get_node_time_execution(node, i));
 					elem_attvalues.appendChild(elem_attvalue);
 					
 					elem_attvalue = doc.createElement("attvalue");
-					elem_attvalue.setAttribute("for", "1");
-					elem_attvalue.setAttribute("value", Long.toString(node.data.thread_id));
+					elem_attvalue.setAttribute("for", "1"); // thread_id
+					elem_attvalue.setAttribute("value", get_node_thread_id(node, i));
 					elem_attvalues.appendChild(elem_attvalue);
 					
-					String slice = String.format("[%d, %d)", node.data.slice_1_begin, node.data.slice_1_end);
 					elem_attvalue = doc.createElement("attvalue");
-					elem_attvalue.setAttribute("for", "2");
-					elem_attvalue.setAttribute("value", slice);
+					elem_attvalue.setAttribute("for", "2"); // slice
+					elem_attvalue.setAttribute("value", get_node_slice(node, i));
 					elem_attvalues.appendChild(elem_attvalue);
 				}
 				elem_node.appendChild(elem_attvalues);
@@ -206,5 +204,29 @@ public class GraphExporter
 	get_node_start(Node<NodeData, EdgeData> node, int i)
 	{
 		return Long.toString(i);
+	}
+	
+	
+	static private
+	String
+	get_node_time_execution(Node<NodeData, EdgeData> node, int i)
+	{
+		return Long.toString(node.data.time_end_computation - node.data.time_begin_computation);
+	}
+	
+	
+	static private
+	String
+	get_node_thread_id(Node<NodeData, EdgeData> node, int i)
+	{
+		return Long.toString(node.data.thread_id);
+	}
+	
+	
+	static private
+	String
+	get_node_slice(Node<NodeData, EdgeData> node, int i)
+	{
+		return String.format("[%d, %d)", node.data.slice_1_begin, node.data.slice_1_end);
 	}
 }
