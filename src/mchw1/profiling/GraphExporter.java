@@ -197,8 +197,7 @@ public class GraphExporter
 	String
 	get_node_label(Node<NodeData, EdgeData> node, int i)
 	{
-//		return Long.toString(i+1);
-		return node.data.fork_count > 0 ? Long.toString(node.data.fork_count) : "";
+		return Long.toString(node.data.thread_id);
 	}
 	
 	
